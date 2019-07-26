@@ -2,6 +2,7 @@ package tn.rents.ms.resources;
 
 import java.util.List;
 
+import org.apache.commons.lang.math.RandomUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 import tn.rents.ms.entities.Car;
 import tn.rents.ms.entities.Rent;
@@ -30,6 +33,21 @@ public class RentController {
 
 	@Autowired
 	private RestTemplate restTemplate;
+	
+	
+	@HystrixCommand(fallbackMethod = "fallBackHello",commandKey = "hello",groupKey ="hello" )
+	@GetMapping("hello")
+	public String hello() {
+		if(RandomUtils.nextBoolean()) {
+			throw new RuntimeException("failed");
+		}
+		return "hello";
+	}
+	
+	public String fallBackHello() {
+		return "fall back hello initiated";
+	}
+	
 
 	@PostMapping
 	public ResponseEntity<String> addRent(@RequestParam String username, @RequestParam String plate) {
